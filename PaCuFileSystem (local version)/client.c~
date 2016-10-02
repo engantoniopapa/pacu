@@ -1,0 +1,117 @@
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <errno.h>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+
+#define SERV_PORT	5005
+#define BACKLOG		10
+
+
+
+
+ssize_t	writen(int , const void* , size_t );
+ssize_t readn(int , void* , size_t ) ;
+
+int main(int argc, char **argv)
+{
+  int			sockfd;
+  struct sockaddr_in	servaddr;
+	printf("int = %u , char = %u \n" , sizeof(int *) , sizeof(char*));
+
+  if (argc != 2) {
+    fprintf(stderr, "utilizzo: echo_client <indirizzo IP server>\n");
+    exit(1);
+  }    
+
+  if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+    perror("errore in socket");
+    exit(1);
+  }
+
+  memset((void *)&servaddr, 0, sizeof(servaddr));
+  servaddr.sin_family = AF_INET;
+  servaddr.sin_port = htons(SERV_PORT);
+  if (inet_pton(AF_INET, argv[1], &servaddr.sin_addr) <= 0) {
+    fprintf(stderr, "errore in inet_pton per %s\n", argv[1]);
+    exit(1);
+  }    
+
+  if (connect(sockfd, (struct sockaddr *) &servaddr, sizeof(servaddr)) < 0) {
+    perror("errore in connect");
+    exit(1);
+  }    
+
+  int b = 1;		
+
+	while( b ) 		
+	{
+		int n ;
+		char frase[100];
+		printf("scrivi: \n");
+		scanf("%s",frase);
+
+ 		if ((n = writen( sockfd , frase , 100)) == 0 )
+
+		
+		if( n < 0)
+		{
+			perror("errore nella wirteline\n");
+		}
+	}
+  
+  close(sockfd);
+  
+  exit(0);
+}
+
+/******/
+ssize_t writen(int fd, const void *buf, size_t n)
+{
+  size_t nleft;
+  ssize_t nwritten;
+  const char *ptr;
+
+  ptr = buf;
+  nleft = n;
+  while (nleft > 0) {
+    if ((nwritten = write(fd, ptr, nleft)) <= 0) {
+       if ((nwritten < 0) && (errno == EINTR)) nwritten = 0; 	    
+       else return(-1);	    /* errore */
+    }
+    nleft -= nwritten;
+    ptr += nwritten;  
+  }
+  return(n-nleft);
+}
+
+/******/
+ssize_t readn(int fd, void *buf, size_t count) 
+{
+	size_t nleft;
+	ssize_t nread;
+ 
+	nleft = count;
+	while (nleft > 0) {             /* repeat until no left */
+		if ( (nread = read(fd, buf, nleft)) < 0) {
+			if (errno == EINTR) {   /* if interrupted by system call */
+				continue;           /* repeat the loop */
+			} else {
+				return(nread);      /* otherwise exit */
+			}
+		} else if (nread == 0) {    /* EOF */
+			break;                  /* break loop here */ 
+		}
+		nleft -= nread;             /* set left to read */
+		buf +=nread;                /* set pointer */
+	}
+	return (nleft);
+}
+
+/******/
+

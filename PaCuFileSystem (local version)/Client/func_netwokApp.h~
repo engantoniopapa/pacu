@@ -1,0 +1,27 @@
+
+
+BootMessage* init_bootmessage(unsigned char) ;//inizializza un messaggio di tipo BootMessage
+
+BootAM* create_boot_am(); // crea un messaggio di tipo BootAM
+
+BootAM* init_boot_am(unsigned char , char * , int , char * , int , char * , int ); //	Inizializza un messaggio di tipo BootAM
+
+int set_timeout(int  , time_t  , suseconds_t  , time_t  , suseconds_t ); // imposta il timeout sulla connessione
+
+int connessioneClient(char *ipServer, uint16_t port_server);// Crea la connessione
+
+void addr_init(struct sockaddr_in *, in_port_t * , long int ) ;// Inizializzazione della variabile sockaddr_in
+
+void get_ip_string( char * , struct in_addr * ); // converto un indirizzo ip in formato stringa in uno in formato u_long (unsigned long)
+
+int connection_serverBoot() ; //comunicazione client-BootServer
+
+char* writeFile_on_buffer(int fd, size_t n); // Scrive su buffer il contenuto di un file o socket
+
+int writeBuffer_on_file(int fd, size_t n , char*buffer); //  Scrive su file o socket il contenuto di un buffer
+
+ssize_t writen(int , const void *, size_t ); // gestisce la scrittura su socket
+
+ssize_t readn(int , void *, size_t ); // gestisce la lettura su socket
+
+ssize_t readn_noblock(int , void *, size_t ); // gestisce la lettura su socket bloccante solo per la prima ricezione

@@ -1,0 +1,22 @@
+
+#include "header.h"
+
+
+int main()
+{
+
+	TrLog *rec_tr;
+	char str_cond[_DIM_COND] = {0x0};
+	char str_groupby[_DIM_COND] = {0x0};
+	char stringa_errore[_MAX_STRING_ERROR] = {0x0};
+	int len;
+
+	snprintf(str_cond , _DIM_COND -1 , " where state = %d "  , LOG_PRONTO );
+	strncpy(str_groupby , " group by id_p , id_c " , _DIM_COND -1 );
+	
+	rec_tr = select_recTR(path , "Log" , str_cond , str_groupby , stringa_errore , &len);
+	
+	printf(" len = %d \n" , strlen(rec_tr[i].res2);
+	
+	return 0 ;
+}

@@ -1,0 +1,233 @@
+#include "header.h"
+
+
+
+//	Inizializza un messaggio di tipo BootMessage, ritorna: il puntatore al messaggio creato
+//	Parametri-> descrittore di payload del messaggio
+BootMessage* init_bootmessage( unsigned char c)
+{
+
+	BootMessage *b;
+	b = (BootMessage *) malloc( sizeof(BootMessage) );
+
+	b->pay_desc = c ;
+	
+	if( c == _BOOT_PING )
+	{
+		b->versione_dominio = version_dom ;
+		b->versione_primay = version_serv ;
+	}
+
+	if( c == _BOOT_PONG )
+	{
+		b->versione_dominio = 0 ;
+		b->versione_primay = 0 ;
+	}
+
+	if( c == _BOOT_LIST)
+	{
+		b->versione_dominio = 0.0 ;
+		b->versione_primay = 0.0 ;
+	}
+
+	return b;
+}
+
+
+
+//	modifica un messaggio di tipo BootMessage
+//	Parametri-> descrittore di payload del messaggio
+void set_bootmessage(BootMessage *b , unsigned char c)
+{
+
+	b->pay_desc = c ;
+	
+	if( c == _BOOT_PING )
+	{
+		b->versione_dominio = version_dom ;
+		b->versione_primay = version_serv ;
+	}
+
+	if( c == _BOOT_PONG )
+	{
+		b->versione_dominio = 0 ;
+		b->versione_primay = 0 ;
+	}
+
+	if( c == _BOOT_LIST)
+	{
+		b->versione_dominio = 0.0 ;
+		b->versione_primay = 0.0 ;
+	}
+
+}
+
+
+//	Inizializza un messaggio di tipo InitMessage, ritorna: il puntatore al messaggio creato
+//	Parametri-> descrittore di payload del messaggio , path risorsa , lunghezza path risorsa , campi opzionali
+InitMessage* init_InitMessage( unsigned char c , char *res , int l_res , int opt1 , int opt2)
+{
+	InitMessage *b;
+	b = (InitMessage *) calloc( 1 , sizeof(InitMessage) );
+
+	b->pay_desc = c ;
+	if( c == _INIT_UPDATE_DOM)
+	{
+	}
+	else
+	{
+    memcpy(b->res , res , l_res * sizeof(char) );
+    b->l_res = l_res;
+    b->opt1 = opt1;
+    b->opt2 = opt2;
+	}
+	return b;
+}
+
+
+//	Inizializza un messaggio di tipo DiagMessage, ritorna: il puntatore al messaggio creato
+//	Parametri-> descrittore di payload del messaggio , campi opzionali
+DiagMessage* init_DiagMessage( unsigned char c , int param)
+{
+	DiagMessage *b;
+	b = (DiagMessage *) calloc( 1 , sizeof(DiagMessage) );
+
+	b->pay_desc = c ;
+	b->param_state = param;
+	
+	return b;
+}
+
+
+
+//	Inizializza un messaggio di tipo BootAM, ritorna: il puntatore al messaggio creato
+//	Parametri-> descrittore di payload del messaggio, i vari campi del tipo di messaggio
+BootAM* init_boot_am(unsigned char p , char *nick , int l_nick , char *psw , int l_psw , char *query , int l_query)
+{
+	BootAM *msg;
+	msg = create_boot_am();
+
+	msg->pay_desc = p;
+
+	if(p == _BOOT_EXIT_AM || p ==  _BOOT_ERROR_AM || p == _BOOT_LOGOUT_AM || p == _BOOT_COMMIT_AM)
+	{ ; } 
+	else
+	{
+		if(p == _BOOT_LOGIN_AM)
+		{
+			strncpy(msg->nick , nick , l_nick);
+			msg->dim_nick = l_nick;
+			strncpy(msg->psw , psw , l_psw);
+			msg->dim_psw = l_psw;
+		}
+
+		if(p == _BOOT_USE_DB_AM || p ==  _BOOT_SELECT_AM || p == _BOOT_GE_OP_AM)
+		{
+			strncpy(msg->query , query , l_query);
+			msg->dim_query = l_query;
+		}
+
+		if(p == _BOOT_CHANGE_PSW_AM)
+		{
+			strncpy(msg->nick , nick , l_nick );
+			msg->dim_nick = l_nick;
+			strncpy(msg->psw , psw , l_psw );
+			msg->dim_psw = l_psw;
+			strncpy(msg->query , query , l_query );
+			msg->dim_query = l_query;
+		}
+	}
+
+	return msg;
+}
+
+
+
+//	Inizializza un messaggio di tipo Transaction, ritorna: il puntatore al messaggio creato
+//	Parametri-> descrittore di payload del messaggio, i vari campi del tipo di messaggio
+TrMessage* init_transaction_msg(unsigned char p , int id_pr , int id_c , int count ,  int opt1 , int opt2)
+{
+	TrMessage *msg;
+	msg = (TrMessage *) calloc( 1 , sizeof(TrMessage) );
+
+	msg->pay_desc = p;
+
+	if(p == _TR_DO_ID || p ==  _TR_COMMIT || p == _TR_ABORT || p == _TR_MKDIR || p == _TR_UPLOAD || p == _TR_NEW_GA || p == _TR_RM || p == _TR_ERROR || 
+		 p == _TR_NEW_CAP || p == _TR_RM_CAP || p == _TR_MV_CAP || p == _TR_MOD_CAP || p == _TR_RM_DIR )
+	{
+		msg->id_primary = id_pr ;
+		msg->id_count = id_c ;
+		msg->msg_count = count ;
+		msg->opt1 = opt1 ;
+		msg->opt2 = opt2 ;
+	} 
+
+	return msg;
+}
+
+
+//	modfica un messaggio di tipo Transaction, ritorna: il puntatore al messaggio creato
+//	Parametri-> descrittore di payload del messaggio, i vari campi del tipo di messaggio
+void set_transaction_msg(TrMessage* msg , unsigned char p , int id_pr , int id_c , int count ,  int opt1 , int opt2)
+{
+	
+	memset(msg , '0' , sizeof(TrMessage) );
+
+	msg->pay_desc = p;
+
+	if(p == _TR_DO_ID || p ==  _TR_COMMIT || p == _TR_ABORT || p == _TR_MKDIR || p == _TR_UPLOAD || p == _TR_NEW_GA || p == _TR_RM || p == _TR_ERROR || 
+		 p == _TR_NEW_CAP || p == _TR_RM_CAP || p == _TR_MV_CAP || p == _TR_MOD_CAP || p == _TR_RM_DIR )
+	{
+		msg->id_primary = id_pr ;
+		msg->id_count = id_c ;
+		msg->msg_count = count ;
+		msg->opt1 = opt1 ;
+		msg->opt2 = opt2 ;
+	} 
+
+}
+
+
+//comunicazione client-BootServer, ritorna: 0 se c'e' un errore, il descrittore de socket se l'operazione va a buon fine
+int connection_serverBoot()
+{
+	int rc;
+	char *stringa_errore;
+	int sockfd;
+	
+	DB *db_conf; // descrittore del DB Conf
+
+	db_conf = ( DB *) malloc (sizeof(DB) ) ;
+	stringa_errore = (char *) calloc (_MAX_STRING_ERROR  , sizeof(char) );
+	
+	rc = open_db_ro( db_conf , PATH_DB_CONF , stringa_errore);
+  if( !rc )
+	{
+    fprintf(stderr, "%s\n", stringa_errore);
+    exit(1);
+  }
+
+	char ip_boot[_DIM_IPV4];
+	uint16_t port_boot;
+	rc = select_boot_server(db_conf , ip_boot ,  &port_boot , 0);
+	
+	printf( "ip %s , port %d \n", ip_boot , port_boot);
+
+	rc = close_db(db_conf, stringa_errore);
+  if( !rc ){
+    fprintf(stderr, "%s\n", stringa_errore);
+    exit(1);
+  }
+	free(stringa_errore);
+	free(db_conf);
+
+	if( ( sockfd = connessioneClient(ip_boot , port_boot , tentativi_boot) ) > 0 )
+	{
+		return sockfd;
+	}
+
+	return 0;
+}
+
+
+

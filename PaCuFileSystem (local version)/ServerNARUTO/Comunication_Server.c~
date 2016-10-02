@@ -1,0 +1,66 @@
+#include "header.h"
+
+
+Server *vistaServer(char *dom , char *path_db )
+{
+	DB *db_dom; // descrittore del DB Domini
+	int rc;
+	char *stringa_errore;
+	char string_query[_DIM_QUERY_COND];
+	Server *list_server; 
+	ResultQuery *struct_list;
+	
+	db_dom = ( DB *) malloc (sizeof(DB) ) ;
+	stringa_errore = (char *) calloc (_MAX_STRING_ERROR  , sizeof(char) );
+	
+	
+	rc = open_db_ro( db_dom , path_db , stringa_errore);
+  if( !rc )
+	{
+    fprintf(stderr, "%s\n", stringa_errore);
+    exit(1);
+  }
+
+	memset( string_query , '\0' , _DIM_QUERY_COND*sizeof(char) );
+	snprintf(string_query , _DIM_QUERY_COND*sizeof(char) , "select name , ip , port from Dom  where dominio = '%s' && server <> '%s' ", dom, name_server);
+
+	
+	struct_list = (ResultQuery*) calloc ( 1 , sizeof(ResultQuery) );
+
+	lock_WR_Reader(sem_vista);
+			len_list_server = count_tb(db , tabella , cond , stringa_errore);	
+			if( len_list_server == -1 )
+			{
+				fprintf(stderr, "%s\n", stringa_errore);
+				*rc = 0;
+				return NULL;
+			}
+
+			list_server = calloc( len_list_server , sizeof(Server));
+	
+
+			struct_list->object = (void*) list_server;
+			struct_list->count = len_list_server;
+			struct_list->l_row = 0;
+
+			if(!select_on_bufferServer(db , string_query , struct_list , stringa_errore ) )
+			{
+				fprintf(stderr, "%s\n", stringa_errore);
+				*rc = 0;
+				return NULL;
+			}
+	unlock_WR_Reader(sem_vista);
+	
+	free(struct_list);
+	
+	rc = close_db(db_dom, stringa_errore);
+  if( !rc ){
+    fprintf(stderr, "%s\n", stringa_errore);
+    exit(1);
+  }
+
+	free(stringa_errore);
+	free(db_dom);
+
+	return list_server;
+}

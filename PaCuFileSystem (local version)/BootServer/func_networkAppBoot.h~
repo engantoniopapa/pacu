@@ -1,0 +1,28 @@
+
+
+int bootServer(in_port_t * , int ); //bootstrap della connesione lato server
+
+int recv_ping( int  , BootMessage *  ); // gestisce la ricezione del messaggio di ping
+
+int send_pong(int , double *); //gestisce l'invio del messaggio di pong
+
+void send_error(int); // gestisce l'invio del messaggio di errore
+
+int wait_req_client(int ); //gestisce la richiesta della lista PrimaryServer
+
+int send_server_list(int , char *); // gestisce l'invio della lista PrimaryServer
+
+int send_result_query(int  , char *); //	Invio risultato select (Amministratore)
+
+int  recv_login( int  , BootAM * ); //	Ricezione messaggio di BootLogin
+
+int send_error_am(int , char * ); //	Invio messaggio di errore (Amministratore)
+
+int check_psw(DB * ,char * , int , char*  , int ); //	Verifica password per il login (Amministratore)
+
+int send_commit_am( int connsd ); //invia un messaggio di BootCommit (Amministratore)
+
+
+
+
+

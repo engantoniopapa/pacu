@@ -1,0 +1,8 @@
+
+void *func_dispatcher_DNS();  //	porzione di codice del dispatcher che rimane in ascolto su una porta 
+void *func_helper_DNS(void *);  //	porzione di codice degli helper che si contendono le richieste di connessione client
+
+void *func_thread_am();  // porzione di codice del thread responsabile della connessione con l'amministratore
+
+int control_login(int ,  DB * , BootAM *); //  esegue i vari controlli per il login amministratore
+

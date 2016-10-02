@@ -1,0 +1,141 @@
+#include "header.h"
+
+
+int disp_ComunicationServ(int connsd)
+{
+	InitMessage *msg_i;
+
+	msg_i = calloc( 1 , sizeof(InitMessage));
+	
+	set_timeout(connsd  , timeout_init_msg  , 0  , timeout_init_msg  , 0 );	
+
+	if( recv_InitMessage( connsd , msg_i)  ==  1)
+	{;}
+	else
+	{
+			free(msg_i);
+			return 0;
+	}
+
+	if(msg_i->pay_desc == _INIT_START_TR )
+	{	
+		int b ;
+		
+		b = op_init_StartTr(connsd, msg_i);
+		free(msg_i);
+		return 3;
+	}
+ 	
+	if(msg_i->pay_desc == _INIT_STATE_TR )
+	{	
+		int b;
+		b = op_init_stateTR(connsd , msg_i);
+		free(msg_i);
+		return 1 ;
+	}	
+	
+	perror("errore messaggio non formattato \n");
+	free(msg_i);
+	DiagMessage * msg;
+	msg = init_DiagMessage( _DIAG_ERROR ,_BIZANTINE_ERROR);
+	send_DiagMessage(connsd , msg);
+	free(msg);
+	return 0;
+}
+
+
+
+// operazione sul messaggio di init_start_tr, ritorna 1 se l'operazione è riuscita, 0 se c'e' qualche errore
+// Parametri -> descrittore della connessione, messaggio ricevuto
+int disp_serv_StartTr(int connsd , InitMessage *msg_i)
+{
+	if(msg_i->l_res < 1)
+	{
+		return 0;
+	}	
+	
+	int temp_rc ;	
+	temp_rc = is_replica( msg_i->res , msg_i->l_res , name_server);
+
+	if(temp_rc == -1)
+	{
+		TrMessage* msg;
+		msg =  init_transaction_msg(_TR_ERROR , -1 , -1 , -1 , _ERR_TR_GE , 0 );
+		send_TrMessage(connsd , msg);
+		free(msg);
+		return 0;
+	}
+	
+	if(temp_rc == 0)
+	{
+		TrMessage* msg;
+		msg =  init_transaction_msg(_TR_ERROR , -1 , -1 , -1 ,  _ERR_TR_IGNDOM , 0);
+		send_TrMessage(connsd , msg);
+		free(msg);
+		return 0;
+	}
+
+	int dim  = _DIM_RES * 2;
+ 	char temp_path[dim];
+ 	memset(temp_path , '\0' ,  dim);
+ 	strncat(temp_path, fs_path ,dim);
+ 	strncat(temp_path, msg_i->res , msg_i->l_res);
+ 	
+ 	if(msg_i->opt1 == OPT1_ISTR_DIR || msg_i->opt1 == OPT1_ISTR_FILE || msg_i->opt2 == OPT2_ISTR_IS || msg_i->opt2 ==OPT2_ISTR_NOIS )
+ 	{
+ 		if(msg_i->opt2 == OPT2_ISTR_IS)
+ 		{
+ 			if(msg_i->opt1 == OPT1_ISTR_DIR)
+ 			{
+ 				if(!isDir(temp_path))
+ 				{
+					TrMessage* msg;
+					msg =  init_transaction_msg(_TR_ERROR , -1 , -1 , -1 , _ERR_TR_NORES , 0);
+					send_TrMessage(connsd , msg);
+					free(msg);
+					return 0 ;
+ 				}
+ 			}
+ 			
+ 	 		if(msg_i->opt1 == OPT1_ISTR_FILE)
+ 			{
+ 			 if(!isFile(temp_path) )
+ 			 {
+					TrMessage* msg;
+					msg =  init_transaction_msg(_TR_ERROR , -1 , -1 , -1 , _ERR_TR_NORES , 0);
+					send_TrMessage(connsd , msg);
+					free(msg);
+					return 0 ;
+ 				}
+ 			}
+ 		}
+ 		else
+ 		{
+ 			char tmp[_DIM_RES * 2] = {0x0};
+			get_top_path(tmp, temp_path);
+
+			if(!isDir(tmp))
+			{
+				TrMessage* msg;
+				msg =  init_transaction_msg(_TR_ERROR , -1 , -1 , -1 , _ERR_TR_NORES , 0);
+				send_TrMessage(connsd , msg);
+				free(msg);
+				return 0 ;
+			}
+ 		}
+ 	}
+	else
+	{
+		TrMessage* msg;
+		msg =  init_transaction_msg(_TR_ERROR , -1 , -1 , -1 ,  _ERR_TR_BIZ , 0);
+		send_TrMessage(connsd , msg);
+		free(msg);
+		return 0 ;
+	}
+
+	int short b ;
+	b = start_transaction(connsd , msg_i);
+
+	return b;	
+	
+}

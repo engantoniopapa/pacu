@@ -1,0 +1,43 @@
+
+
+int generatoreRandom(int ); // genera un numero random da 0 a num-1
+
+int cp_rewrite_file(char * , char * ,int ); // copia il file source nel file des, se il file dest esiste lo sovrascrive
+
+int isDir(const char *); // verifica l'esistenza di una directory
+
+int isFile(const char *); // verifica l'esistenza di un file
+
+char *dup_str(const char *);// Duplica la stringa passata come parametro
+
+char **get_all_files(const char * , size_t *); // Ottiene la lista di tutti i file presenti in una directory.
+
+void printContent(char ** , size_t ); // Stampa il nome del contenuto della directory
+
+void freeContent(char ** , size_t ); // Libera la memoria dalla matrice di stringhe utilizzata per l'elencazione del contenuto
+
+char **get_filtered_files(char *, char *, char **, int *, int *, short int *); // Ottiene la lista di tutti i file e directory che corrispondono al filtro inserito
+
+char **search(char *, char *, int *); // Inizializza la lista da passare alla funzione get_all_files e da inizio alla procedura ricorsiva
+
+void printList(char **, int); // Stampa i risultati ottenuti 
+
+void freeList_search(char **, int); // Libera la memoria dalla matrice di stringhe ottenuta come risultato della ricerca
+
+int cp_fileTemp(char* , int ); // crea un file temporaneo a partire da un file
+
+int create_fileTemp(char * , char * , int  ); // crea un file temporaneo vuoto
+
+int write_res_on_res(int , int , int ); // copia la risorsa sorg nella risorsa dest (versione bloccante)
+
+int write_control_res(int , int , int  , unsigned int ); // copia la risorsa sorg nella risorsa dest (versione non bloccante)
+
+void get_namefile(char* , int , char *); // estrae il nome del file dal path
+
+void get_top_path(char* , char *); // restituisce il percorso della cartella superiore
+
+int createDirectory(char *); // crea una directory
+
+int removeDirectory(char *); // elimina una directory se vuota
+
+void get_myip(char * , char * , int ); // restituisce l'indirizzo ip pubblico della macchina

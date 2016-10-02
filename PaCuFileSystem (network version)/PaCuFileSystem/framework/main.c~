@@ -1,0 +1,18 @@
+#include "framework.h"
+
+
+
+
+
+int main()
+{
+
+		int fd = open("prova.ga", O_RDWR); 
+		char *modifica;
+		int fn = open("modifica", O_RDWR)
+		modifica = loadPatch(fd, 4, fn);
+		
+		printf("--%s---\n");
+
+return 0;
+}

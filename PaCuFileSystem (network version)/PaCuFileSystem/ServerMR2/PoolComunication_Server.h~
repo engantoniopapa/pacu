@@ -1,0 +1,5 @@
+
+
+int pool_ComunicationServ(int ); // ricezione primo messaggio dal priary/replica
+
+int pool_serv_StartTr(int , InitMessage *); // operazione del pool server sul messaggio di init_start_tr

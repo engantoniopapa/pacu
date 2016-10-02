@@ -1,0 +1,63 @@
+
+PERCORSO="/hosthome/netkit/startnet"
+
+case "$HOSTNAME" in 
+	
+	BootServer)
+		ifconfig eth0 116.116.10.1 netmask 255.255.0.0 broadcast 10.0.0.255 up
+		;;
+	ServerNaruto)
+		ifconfig eth0 116.116.50.10 netmask 255.255.0.0 broadcast 10.0.0.255 up
+		;;		
+	ServerMR2)
+		ifconfig eth0 116.116.50.13 netmask 255.255.0.0 broadcast 10.0.0.255 up
+		;;	
+	ServerBack)
+		ifconfig eth0 116.116.50.15 netmask 255.255.0.0 broadcast 10.0.0.255 up
+		;;	
+	ServerAce)
+		ifconfig eth0 116.116.50.14 netmask 255.255.0.0 broadcast 10.0.0.255 up
+		;;		
+	ServerZoro)
+		ifconfig eth0 116.116.50.11 netmask 255.255.0.0 broadcast 10.0.0.255 up
+		;;	
+	ServerRukia)
+		ifconfig eth0 116.116.50.12 netmask 255.255.0.0 broadcast 10.0.0.255 up
+		;;	
+	Client1)
+		ifconfig eth0 116.116.100.1 netmask 255.255.0.0 broadcast 10.0.0.255 up
+				;;	
+	Client2)
+		ifconfig eth0 116.116.100.2 netmask 255.255.0.0 broadcast 10.0.0.255 up
+				;;	
+	Client3)
+		ifconfig eth0 116.116.100.3 netmask 255.255.0.0 broadcast 10.0.0.255 up
+				;;	
+	Client4)
+		ifconfig eth0 116.116.100.4 netmask 255.255.0.0 broadcast 10.0.0.255 up
+		;;
+	*)
+		vstart BootServer --eth0=hA --exec=$PERCORSO
+
+		vstart ServerNaruto --eth0=hA --exec=$PERCORSO
+		
+		vstart ServerMR2 --eth0=hA --exec=$PERCORSO
+		
+		vstart ServerBack --eth0=hA --exec=$PERCORSO
+		
+		vstart ServerAce --eth0=hA --exec=$PERCORSO
+		
+		vstart ServerZoro --eth0=hA --exec=$PERCORSO
+		
+		vstart ServerRukia --eth0=hA --exec=$PERCORSO
+		
+		vstart Client1 --eth0=hA --exec=$PERCORSO
+		
+		vstart Client2 --eth0=hA --exec=$PERCORSO
+		
+		vstart Client3 --eth0=hA --exec=$PERCORSO
+		
+		vstart Client4 --eth0=hA --exec=$PERCORSO
+		;;
+esac
+

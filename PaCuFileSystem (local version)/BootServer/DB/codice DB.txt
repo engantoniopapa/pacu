@@ -1,0 +1,33 @@
+----------------DB Conf----------------
+
+CREATE TABLE Parametri(
+id INTEGER PRIMARY KEY ,
+nome varchar(30),
+valore unsigned int,
+note text);
+
+CREATE TABLE Version
+(id unsigned int ,
+v_dom real,
+v_primary real);
+
+
+CREATE TABLE Accesso
+(nick varchar(30),
+psw varchar(16));
+
+
+
+
+
+
+---------------DB Primary-------------
+
+CREATE TABLE ListServer(
+name  varchar(30) primary key,
+ip varchar(16),
+port unsigned short int);
+
+
+
+

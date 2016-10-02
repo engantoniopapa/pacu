@@ -1,0 +1,120 @@
+#include "framework.h"
+
+
+//crea un messaggio di tipo PPMessage, ritorna il puntatore al messaggio
+PPMessage *create_PPmessage()
+{
+	PPMessage *b;
+	b = (PPMessage *) calloc( 1 , sizeof(PPMessage) );
+	
+	return b;
+}
+
+
+
+// inizializza un messaggio di tipo PPMessage, ritorna il puntatore al messaggio, il puntatore del messaggio creato oppure NULL se c'e' qualche errore
+// Parametri-> descrittore di payload del messaggio, id , ip mittente , porta mittente
+PPMessage *init_PPmessage(unsigned char pay_desc, int id, char *ip , int port	)
+{
+	if( pay_desc == _PING_MESS_UDP || pay_desc == _PONG_MESS_UDP )
+	{
+		PPMessage *b;
+		b = create_PPmessage();
+
+		b->pay_desc = pay_desc;
+		b->id = id;
+		strncpy(b->ip , ip, _DIM_IP );
+		b->port = port;
+		
+		return b;
+	}
+
+	return NULL;	
+}
+
+
+
+// setta un messaggio di tipo PPMessage, ritorna il puntatore al messaggio, il puntatore del messaggio creato oppure NULL se c'e' qualche errore
+// Parametri-> messaggio da settare , descrittore di payload del messaggio, id , ip mittente , porta mittente
+void set_PPmessage(PPMessage *b , unsigned char pay_desc, int id, char *ip , int port	)
+{
+	if( pay_desc == _PING_MESS_UDP || pay_desc == _PONG_MESS_UDP )
+	{
+
+		b->pay_desc = pay_desc;
+		b->id = id;
+		strncpy(b->ip , ip, _DIM_IP );
+		b->port = port;
+		
+	}
+}
+
+
+int send_PPmessage(PPMessage *msg , char*ip , int port )
+{
+	int sockfd;
+	struct sockaddr_in addr;
+	
+	if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) /* crea il socket udp */
+	{ 
+    perror("\e[1;31mErrore: Nella creazione socket \n");
+    return 0;
+  }
+  
+  memset((void *)&addr, 0, sizeof(addr));
+  addr.sin_family = AF_INET;
+  if (inet_pton(AF_INET, ip, &addr.sin_addr) <= 0) 
+  {
+    fprintf(stderr, "\e[1;31mErrore: nella conversione dell'indirizzo ip: %s\n", ip);
+    return;
+  }  
+  addr.sin_port = htons(port); /* numero di porta */
+
+  /* assegna l'indirizzo al socket */
+  if (bind(sockfd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+    perror("\e[1;31mErrore: Nella procedura bind \n");
+    return 0;
+  }
+  
+  if ( (sendto(sockfd, msg, sizeof(PPMessage), 0, (struct sockaddr *)&addr, sizeof(addr))) < 0) 
+  {
+    perror("\e[1;31mErrore: Nella sendto \n");
+    return 0;
+  }
+	
+}
+
+int recv_PPmessage(PPMessage *msg , int port)
+{
+	int sockfd;
+	struct sockaddr_in servaddr;
+	
+	if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) /* crea il socket udp */
+	{ 
+    perror("\e[1;31mErrore: Nella creazione socket \n");
+    return 0;
+  }
+	
+	memset((void *)&addr, 0, sizeof(addr));
+  addr.sin_family = AF_INET;
+  addr.sin_addr.s_addr = htonl(INADDR_ANY); /* il server accetta pacchetti su una qualunque delle sue interfacce di rete */
+  addr.sin_port = htons(port); /* numero di porta */
+
+  /* assegna l'indirizzo al socket */
+  if (bind(sockfd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+    perror("\e[1;31mErrore: Nella procedura bind \n");
+    return 0;
+  }
+  
+  socklen_t len = sizeof(addr);
+  
+  if ( (recvfrom(sockfd, msg, sizeof(PPMessage), 0, (struct sockaddr *)&addr, &len)) < 0) 
+  {
+    perror("\e[1;31mErrore: Nella recvfrom \n");
+    return 0;
+  }
+}
+
+
+
+

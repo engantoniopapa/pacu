@@ -1,0 +1,174 @@
+#include "../framework.h"
+
+/*Crea la patch. Restituisce il testo della patch.
+origin = testo originale
+modified = nuovo testo*/
+char *patchCreate(char *origin, char *modified)
+{
+    PyObject *pName, *pModule, *pDict, 
+                  *pClass, *pInstance, *pDiffs, *pPatch, *tupleItem, *tempResult;
+    int i;
+    char *argvt[7] = {"diff_match_patch", "diff_match_patch", "diff_main", "patch_make", "patch_apply", "patch_toText", "patch_fromText"};
+    char *result;
+    /*if (argc < 4) 
+    {
+        printf(
+          "Usage: exe_name python_fileclass_name function_name\n");
+        return 1;
+    }*/
+
+	Py_Initialize();
+    PyRun_SimpleString("import sys");
+    PyRun_SimpleString("sys.path.append(\".\")");
+   pName = PyString_FromString(argvt[0]);
+
+    // Load the module object
+
+    pModule = PyImport_Import(pName);
+
+    // pDict is a borrowed reference 
+
+    pDict = PyModule_GetDict(pModule);
+
+    // Build the name of a callable class 
+
+    pClass = PyDict_GetItemString(pDict, argvt[1]);
+
+    // Create an instance of the class
+
+    if (PyCallable_Check(pClass))
+    {
+        pInstance = PyObject_CallObject(pClass, NULL); 
+    }
+
+    // Build the parameter list
+
+    /*if( argc > 4 )
+    {
+        for (i = 0; i < argc - 4; i++)
+            {
+                    arg[i] = argv[i + 4];
+            }
+        // Call a method of the class with two parameters
+
+        pValue = PyObject_CallMethod(pInstance, argv[3], "(ss)", arg[0], arg[1]);
+    } */
+    /*else
+    {
+        // Call a method of the class with no parameters
+
+        pValue = PyObject_CallMethod(pInstance, argv[3], NULL);
+    }*/
+    pDiffs = PyObject_CallMethod(pInstance, argvt[2], "(ss)", origin, modified);
+    if (pDiffs != NULL) 
+    {
+        if(PyList_Check(pDiffs))
+        {
+            int listSize = PyList_Size(pDiffs);
+            for( i=0; i < listSize; i++ ) {
+                tupleItem = PyList_GetItem(pDiffs, i);
+                //printf("Return of call : (%ld , %s)\n", PyInt_AsLong(PyTuple_GetItem(tupleItem,0)), PyString_AsString(PyTuple_GetItem(tupleItem,1)));
+            }
+            pPatch = PyObject_CallMethod(pInstance, argvt[3], "(O)", pDiffs);
+            if (pPatch != NULL) 
+            {
+                //char *p = "@@ -21,18 +22,17 @@\n jump\n-s\n+ed\n  over \n-the\n+a\n  laz\n";
+                //PyObject *prova = PyObject_CallMethod(pInstance, argvt[6], "(s)", p);
+                tempResult = PyObject_CallMethod(pInstance, argvt[5], "(O)", pPatch);
+                char *prova = PyString_AsString(tempResult);
+                //printf("Return of texted patch : %s\n", prova);
+                result = (char *)calloc(strlen(prova)+1,1);
+                strncpy(result, prova, strlen(prova)+1);
+                Py_DECREF(pPatch);
+            }
+            else 
+            {
+                PyErr_Print();
+            }
+        }
+        Py_DECREF(pDiffs);
+    }
+    else 
+    {
+        PyErr_Print();
+    }
+    // Clean up
+    Py_DECREF(tupleItem);
+    Py_DECREF(pModule);
+    Py_DECREF(pName);
+
+    // Finish the Python Interpreter
+
+    Py_Finalize();
+
+    return result;
+}
+
+/*Applica la patch ad un testo. Restituisce il testo modificato dalla patch, NULL altrimenti
+origin = testo su cui applicare la patch
+patch = la patch*/
+char *patchApply(char *origin, char *patch)
+{
+    PyObject *pName, *pModule, *pDict, 
+                  *pClass, *pInstance, *pPatch, *pResults;
+    char *argvt[7] = {"diff_match_patch", "diff_match_patch", "diff_main", "patch_make", "patch_apply", "patch_toText", "patch_fromText"};
+    char *result;
+    
+    Py_Initialize();
+    PyRun_SimpleString("import sys");
+    PyRun_SimpleString("sys.path.append(\".\")");
+    
+    pName = PyString_FromString(argvt[0]);
+    
+    // Load the module object
+
+    pModule = PyImport_Import(pName);
+
+    // pDict is a borrowed reference 
+
+    pDict = PyModule_GetDict(pModule);
+
+    // Build the name of a callable class 
+
+    pClass = PyDict_GetItemString(pDict, argvt[1]);
+
+    // Create an instance of the class
+
+    if (PyCallable_Check(pClass))
+    {
+        pInstance = PyObject_CallObject(pClass, NULL); 
+    }
+                
+    pPatch = PyObject_CallMethod(pInstance, argvt[6], "(s)", patch);
+    if (pPatch != NULL) 
+    {
+        pResults = PyObject_CallMethod(pInstance, argvt[4], "(Os)", pPatch, origin);
+        
+        if(pResults)
+        {
+            //printf("Return of call : %s\n", PyString_AsString(PyTuple_GetItem(pResults,0)));
+            result = (char *)calloc(strlen(PyString_AsString(PyTuple_GetItem(pResults,0)))+1, 1);
+            strncpy(result, PyString_AsString(PyTuple_GetItem(pResults,0)), strlen(PyString_AsString(PyTuple_GetItem(pResults,0)))+1);
+            Py_DECREF(pResults);
+        }
+        else
+        {
+            PyErr_Print();
+        }
+        Py_DECREF(pPatch);
+    }
+    else 
+    {
+        PyErr_Print();
+    }
+    
+    // Clean up
+    Py_DECREF(pModule);
+    Py_DECREF(pName);
+
+    // Finish the Python Interpreter
+
+    Py_Finalize();
+
+    return result;
+}

@@ -1,0 +1,21 @@
+vhalt -r BootServer
+
+vhalt -r ServerNaruto
+	
+vhalt -r ServerMR2
+
+vhalt -r ServerBack
+
+vhalt -r ServerRukia
+	
+vhalt -r ServerAce
+
+vhalt -r ServerZoro
+
+vhalt -r Client1
+
+vhalt -r Client2
+
+vhalt -r Client3
+
+vhalt -r Client4

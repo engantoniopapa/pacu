@@ -1,0 +1,188 @@
+#include "../header.h"
+
+
+
+// funzione di connessione al DB in sola lettura, ritorna 0 se c'e' un errore 1 se l'operazione va a buon fine
+int open_db_ro( DB* data_base , char* nome_db , char* string_error)
+{
+
+	int rc;
+	
+	rc = sqlite3_open_v2(nome_db, &(data_base->db), SQLITE_OPEN_READONLY, NULL);
+  if( rc!=SQLITE_OK )
+	{
+		char *string_temp; 
+		strcpy( string_temp , "Can't open database: ") ;
+		strcat( string_temp ,sqlite3_errmsg(data_base->db));
+		strncpy(string_error , string_temp , _MAX_STRING_ERROR );
+
+    sqlite3_close(data_base->db);
+    return 0;
+  }
+	return 1;
+}
+
+// funzione di connessione al DB in lettura&Scrittura, ritorna 0 se c'e' un errore 1 se l'operazione va a buon fine
+int open_db_rw(  DB* data_base , char* nome_db , char* string_error)
+{
+
+	int rc;
+	rc = sqlite3_open_v2(nome_db, &(data_base->db), SQLITE_OPEN_READWRITE, NULL);
+  if( rc!=SQLITE_OK )
+	{
+		char *string_temp; 
+		strcpy( string_temp , "Can't open database: ") ;
+		strcat( string_temp , sqlite3_errmsg(data_base->db));
+		strncpy(string_error , string_temp , _MAX_STRING_ERROR );
+
+    sqlite3_close(data_base->db);
+    return 0;
+  }
+	return 1;
+}
+
+// funzione di chiusura del DB, ritorna 0 se c'e' un errore 1 se l'operazione va a buon fine 
+int close_db(DB* data_base , char* string_error)
+{
+
+	int rc;
+	rc = sqlite3_close(data_base->db);
+
+
+  if( rc!=SQLITE_OK )
+	{
+		char *string_temp; 
+		strcpy( string_temp , "Can't close database: ") ;
+		strcat( string_temp , sqlite3_errmsg(data_base->db));
+		strncpy(string_error , string_temp , _MAX_STRING_ERROR );
+
+   	return 0;
+  }
+	return 1;
+}
+
+//insert sul DB , ritorna 0 se c'e' un errore 1 se l'operazione va a buon fine 
+int insert_db(DB* data_base , char* string_query , char* string_error)
+{	
+	int rc;
+	rc = sqlite3_exec(data_base->db, string_query , 0 , 0, &string_error);
+	
+  if( rc!=SQLITE_OK )
+	{
+		char *string_temp; 
+		strcpy( string_temp , "SQL error: ") ;
+		strcat( string_temp , string_error);
+		strncpy(string_error , string_temp , _MAX_STRING_ERROR);
+  }
+}
+
+//delete sul DB , ritorna 0 se c'e' un errore 1 se l'operazione va a buon fine 
+int delete_db(DB* data_base , char* string_query , char* string_error)
+{
+	int rc;
+	rc = sqlite3_exec(data_base->db, string_query , 0 , 0, &string_error);
+	
+  if( rc!=SQLITE_OK )
+	{
+		char *string_temp; 
+		strcpy( string_temp , "SQL error: ") ;
+		strcat( string_temp , string_error);
+		strncpy(string_error , string_temp , _MAX_STRING_ERROR);
+  }
+}
+
+
+static int callback_am(void* risultato, int argc, char **argv, char **azColName)
+{
+	ResultQuery *temp_risultato ;
+	temp_risultato = (ResultQuery *) risultato;
+	
+	int i ;
+	int length ;
+
+	if(temp_risultato->l_row == 0 )
+	{
+		length = 0;
+		for(i=0; i<argc ; i++){
+		length = length + 1 + strlen (azColName[i]) ;
+	}
+	++length;
+	temp_risultato->count_char = temp_risultato->count_char  + length ;
+	temp_risultato->string_result[temp_risultato->l_row] = (char *) malloc ( sizeof(char) * length);
+	memset(	temp_risultato->string_result[temp_risultato->l_row] , '\0' , sizeof(char) * length );
+
+	for(i=0; i<argc ; i++)
+	{
+		strcat( temp_risultato->string_result[temp_risultato->l_row] ,"|" );
+  	strcat( temp_risultato->string_result[temp_risultato->l_row] , azColName[i]);
+	}
+	strcat( temp_risultato->string_result[temp_risultato->l_row] ,"\n");
+
+	++temp_risultato->l_row;
+		
+	}
+
+
+	length = 0;
+	for(i=0; i<argc ; i++){
+	length = length + 1 + strlen (argv[i] ? argv[i] : "NULL") ;
+	}
+	++length;
+
+	temp_risultato->count_char = temp_risultato->count_char  + length ;
+	temp_risultato->string_result[temp_risultato->l_row] = (char *) malloc ( sizeof(char) * length);
+	memset(	temp_risultato->string_result[temp_risultato->l_row] , '\0' , sizeof(char) * length );
+
+  for(i=0; i<argc; i++)
+	{
+		strcat( temp_risultato->string_result[temp_risultato->l_row] ,"|" );
+    strcat( temp_risultato->string_result[temp_risultato->l_row] , (argv[i] ? argv[i] : "NULL") );
+  }
+  strcat( temp_risultato->string_result[temp_risultato->l_row] ,"\n");
+		
+	++temp_risultato->l_row;
+
+  
+	return 0;
+}
+
+
+//select sul DB , ritorna 0 se c'e' un errore 1 se l'operazione va a buon fine 
+char* select_db_am(DB* data_base , char* string_query , char* string_error , int* no_error)
+{
+	int i;
+	int rc;
+	ResultQuery *risultato;
+	risultato = (ResultQuery * ) malloc ( sizeof(ResultQuery)); 
+	risultato->l_row = 0 ;
+	risultato->count_char = 0; 
+
+	rc = sqlite3_exec(data_base->db, string_query , callback_am , (void*)risultato , &string_error);
+
+  if( rc!=SQLITE_OK )
+	{
+		char *string_temp; 
+		strcpy( string_temp , "SQL error: ") ;
+		strcat( string_temp , string_error);
+		strncpy(string_error , string_temp , _MAX_STRING_ERROR);
+		*no_error = 0 ;
+		return NULL;
+  }
+	
+	char *risultato_string;
+	risultato_string = (char *) malloc ( sizeof(char) * risultato->count_char );
+	memset(	risultato_string , '\0' , sizeof(char) * risultato->count_char );
+	
+	for( i = 0 ; i < risultato->l_row ; i++)
+	{
+		strcat( risultato_string , risultato->string_result[i]);
+	}
+	
+	for( i = 0 ; i < risultato->l_row ; i++)
+	{
+		free(risultato->string_result[i]);
+	}
+	free(risultato);
+	*no_error = 1;
+	return risultato_string;
+}

@@ -1,0 +1,19 @@
+
+
+#define CHOICE_LIST 2
+
+ 
+struct ListPong
+{
+	int used;
+	int length;
+	int *list[CHOICE_LIST];
+};
+typedef struct ListPong ListPong;
+
+
+PPMessage *create_PPmessage(); //crea un messaggio di tipo PPMessage
+
+PPMessage *init_PPmessage(unsigned char , int , char * , int	); // inizializza un messaggio di tipo PPMessage
+
+void set_PPmessage(PPMessage * , unsigned char , int , char * , int ); // setta un messaggio di tipo PPMessage

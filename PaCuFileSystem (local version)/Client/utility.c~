@@ -1,0 +1,51 @@
+#include "header.h"
+
+int generatoreRandom(int num)
+{
+	int a;
+	a = (int)(num * (rand()/(RAND_MAX+1.0)));
+	return a;
+}
+
+
+// copia il file source nel file dest, se il file dest esiste lo sovrascrive, ritorna: 0 se c'e' un errore , 1 se l'operazione va a buon fine
+// Parametri -> path file source , path file dest , dimensione blocco per lettura/scrittura   
+int cp_rewrite_file(char *source , char *dest ,int size )
+{
+	FILE *f_source;
+	FILE *f_dest;
+	int count;
+	
+	f_source = fopen(source , "r");
+	if( f_source == NULL)
+	{
+		perror("Error: ");
+	}
+	
+	f_dest = fopen(dest , "w+");
+	if( f_dest == NULL)
+	{
+		perror("Error: ");
+	}
+	
+	unsigned char buff[size];
+	
+	
+	while(count)
+	{
+		memset(buff , '0' , size);
+		count = fread( (void *)buff, sizeof(unsigned char) , size , f_source);
+
+		if( fwrite( (void *)buff, sizeof(unsigned char) , count , f_dest) < count)
+		{
+				printf("errore nel file: %s \n" , dest); 
+				count = 0 ;
+		}
+
+	}
+	
+	fclose(f_source);
+	fclose(f_dest);
+	
+	return 1;
+}

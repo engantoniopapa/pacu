@@ -1,0 +1,57 @@
+----------------DB Conf----------------
+
+CREATE TABLE Parametri(
+id INTEGER PRIMARY KEY ,
+nome varchar(30),
+valore unsigned int,
+note text);
+
+
+create table NameIdServer (id INTEGER PRIMARY KEY ,
+nome varchar(30) , id_server unsigned int);
+
+
+CREATE TABLE CharParam(
+id INTEGER PRIMARY KEY ,
+nome varchar(30),
+valore varchar(1024),
+note text);
+---------------Domini-------------
+
+!!!nota -> typeserver: 1 primary , 2 replica. 
+
+create table Dom( 
+id INTEGER PRIMARY KEY ,
+dominio varchar(30),
+server varchar(30), 
+type_server unsigned short int,
+ip varchar(16),
+port unsigned short int);
+
+
+
+
+
+
+
+---------------Server-------------
+
+CREATE TABLE ListServer(
+name  varchar(30) primary key,
+ip varchar(16),
+port unsigned short int);
+
+
+
+
+
+--------Logfile-----------
+
+CREATE TABLE Log(
+id INTEGER PRIMARY KEY ,
+id_p unsigned int,
+id_c unsigned int,
+type unsigned short int,
+ris1 varchar(1024),
+ris2 varchar(1024),
+state unsigned short int);

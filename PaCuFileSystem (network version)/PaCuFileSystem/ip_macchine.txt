@@ -1,0 +1,24 @@
+classe boot_server -> 116.116.10.x
+classe server PR -> 116.116.50.x
+classe client -> 111.116.100.x
+
+
+
+---Boot Server---
+Tai cho -> 116.116.10.1
+
+---Server PR ---
+Naruto -> 116.116.50.10 (id: 1000)
+Zoro -> 116.116.50.11 (id: 1040)
+Rukia -> 116.116.50.12 (id: 1050)
+Mr 2 -> 116.116.50.13 (id: 1010)
+Ace -> 116.116.50.14 (id: 1030)
+Back -> 116.116.50.15 (id: 1020)
+
+
+---Client ---
+client1 -> 116.116.100.1
+client2 -> 116.116.100.2
+client3 -> 116.116.100.3
+client4 -> 116.116.100.4
+

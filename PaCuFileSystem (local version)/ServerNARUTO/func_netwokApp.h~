@@ -1,0 +1,48 @@
+
+BootMessage* init_bootmessage(unsigned char) ; //inizializza un messaggio di tipo BootMessage
+BootAM* init_boot_am( unsigned char); // inizializza un messaggio di tipo BootAM
+
+void addr_init(struct sockaddr_in *, in_port_t * , long int ) ;// Inizializzazione della variabile sockaddr_in
+
+int bootServer(in_port_t * , int ); //bootstrap della connesione lato server
+
+int connessioneServer(int listensd); // effettua la connect
+
+int set_timeout(int  , time_t  , suseconds_t  , time_t  , suseconds_t ); // imposta il timeout sulla connessione
+
+void get_ip_string( char * , struct in_addr * ); // converto un indirizzo ip in formato stringa in uno in formato u_long (unsigned long)
+
+int recv_ping( int  , BootMessage *  ); // gestisce la ricezione del messaggio di ping
+
+int send_pong(int , double *); //gestisce l'invio del messaggio di pong
+
+void send_error(int); // gestisce l'invio del messaggio di errore
+
+int wait_req_client(int ); //gestisce la richiesta della lista PrimaryServer
+
+int send_server_list(int , char *); // gestisce l'invio della lista PrimaryServer
+
+int send_result_query(int  , char *); //	Invio risultato select (Amministratore)
+
+int  recv_login( int  , BootAM * ); //	Ricezione messaggio di BootLogin
+
+int send_error_am(int , char * ); //	Invio messaggio di errore (Amministratore)
+
+int check_psw(DB * ,char * , int , char*  , int ); //	Verifica password per il login (Amministratore)
+
+int send_commit_am( int connsd ); //invia un messaggio di BootCommit (Amministratore)
+
+char* writeFile_on_buffer(int , size_t); // Scrive su buffer il contenuto di un file o socket
+
+char* writeFile_on_buffer_noblock(int , size_t );// Scrive su buffer il contenuto di un file o socket (bloccante solo prima della ricezione)
+
+int writeBuffer_on_file(int , size_t , char* ); //  Scrive su file o socket il contenuto di un buffer
+
+ssize_t writen(int , const void *, size_t ); // gestisce la scrittura su socket
+
+ssize_t readn(int , void *, size_t ); // gestisce la lettura su socket
+
+ssize_t readn_noblock(int , void *, size_t ); // gestisce la lettura su socket bloccante solo per la prima ricezione
+
+
+

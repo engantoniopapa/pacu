@@ -1,0 +1,61 @@
+----------------DB Conf----------------
+
+CREATE TABLE Parametri(
+id INTEGER PRIMARY KEY ,
+nome varchar(30),
+valore unsigned int,
+note text);
+
+
+CREATE TABLE CharParam(
+id INTEGER PRIMARY KEY ,
+nome varchar(30),
+valore varchar(1024),
+note text);
+
+
+CREATE TABLE Version
+(id unsigned int ,
+v_dom real,
+v_primary real);
+
+
+CREATE TABLE BootServer
+(id INTEGER PRIMARY KEY ,
+id_server unsigned int,
+name  varchar(30),
+ip varchar(16),
+port unsigned short int);
+
+
+
+
+
+
+---------------DB Primary-------------
+
+CREATE TABLE ListServer(
+name  varchar(30) primary key,
+ip varchar(16),
+port unsigned short int);
+
+
+
+
+---------------Domini-------------
+
+create table Dom( 
+dominio varchar(30) primary key,
+server varchar(30) );
+
+
+--------Logfile-----------
+
+CREATE TABLE Log(
+id INTEGER PRIMARY KEY ,
+id_p unsigned int,
+id_c unsigned int,
+type unsigned short int,
+ris1 varchar(1024),
+ris2 varchar(1024),
+state unsigned short int);

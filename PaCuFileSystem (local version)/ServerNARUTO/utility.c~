@@ -1,0 +1,8 @@
+#include "header.h"
+
+int generatoreRandom(int num)
+{
+	int a;
+	a = (int)(num * (rand()/(RAND_MAX+1.0)));
+	return a;
+}

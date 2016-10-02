@@ -1,0 +1,76 @@
+#include "header.h"
+
+
+void bootstrap();
+
+int main(int argc, char *argv[])
+{
+
+
+	bootstrap();
+  return 0;
+}
+
+
+void bootstrap()
+{
+	DB *db_conf;
+	int rc ;
+	
+	db_conf = ( DB *) malloc (sizeof(DB) ) ;
+	
+	port_client =  ( in_port_t *) malloc (sizeof(in_port_t )); // porta per la comunicazione client - server
+	port_am =  ( in_port_t *) malloc (sizeof(in_port_t )); // porta per la comunicazione client - server
+
+	get_conf(db_conf);
+	
+	char *stringa_errore;
+	stringa_errore = (char *) malloc ( sizeof(char)  * _MAX_STRING_ERROR );
+	memset(stringa_errore,'\0',(sizeof(char)) * _MAX_STRING_ERROR);
+
+
+	rc = close_db(db_conf, stringa_errore);
+  if( !rc ){
+    fprintf(stderr, "%s\n", stringa_errore);
+    exit(1);
+  }
+	
+	free(stringa_errore);
+	free(db_conf);
+
+
+	sem_accept =  make_semaphore(1) ;	// mutex per il lock sull'accept	
+	sem_exit_disp = make_semaphore (0); // inizializzazione signal per la terminazione del dispatcher_serverboot
+	exit_helper = 0;// inizializzazione varibile per segnalare l'uscita agli helper del disptacher boot
+	mux_exit_helper = make_semaphore (1);// inizializzazione mutex per l'accesso alla varibile exit_hboot
+
+
+	pthread_t dispatcher;
+
+	
+
+	printf("Fine bootstrap, avvio disptacher \n");
+	rc = pthread_create (&dispatcher, NULL, func_dispatcher_DNS, (void *)NULL);
+	if (rc)
+	{
+   	printf("ERROR; return code from pthread_create() is %d\n",rc);
+   	exit(-1);
+	}
+
+	sleep(2);  //prova per la terminazione
+
+			// signal di terminazione ai dispatcher
+		sem_post(sem_exit_disp);
+
+
+		pthread_join(dispatcher, NULL );
+	
+
+
+
+
+		//free_all();
+		
+}
+
+	

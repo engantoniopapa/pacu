@@ -1,0 +1,4 @@
+
+
+
+int generatoreRandom(int n); // genera un numero random da 0 a num-1

@@ -1,0 +1,29 @@
+#ifndef SINCRONIZATION_H
+#define SINCRONIZATION_H
+#include "sqlite3.h"
+
+struct object_db
+{
+	sqlite3 *db ;
+};
+typedef struct object_db DB;
+
+struct object_result_query
+{
+	int l_row;
+	char **string_result;
+	long unsigned int  count_char;
+};
+typedef struct object_result_query ResultQuery;
+
+
+int open_db_ro( DB* , char* , char* );
+int open_db_rw(  DB* , char*  , char* );
+int close_db(DB*  , char* );
+int insert_db(DB* , char*  , char* );
+int delete_db(DB*  , char*  , char* );
+static int callback_am(void* , int , char ** , char **);
+char* select_db_am(DB* , char*  , char* , int* );
+
+
+#endif

@@ -1,0 +1,276 @@
+#include "header.h"
+
+//	Inizializzazione della variabile sockaddr_in
+//	Parametri-> puntatore alla struttura sockaddr, puntatore ala porta, e valore dell'ip
+void addr_init(struct sockaddr_in *addr, in_port_t *port, long int ip)  
+{
+        addr->sin_family=AF_INET;
+        addr->sin_port = *port ;
+        addr->sin_addr.s_addr=htons(ip);
+}
+
+
+
+// Bootstrap della connessione lato server, ritorna: il descrittore socket per mettersi in ascolto sulla porta
+//	Parametri-> puntatore alla porta , e lunghezza coda di backlog
+int bootServer( in_port_t *port , int backlog) 
+{
+	int listensd;
+	struct sockaddr_in servaddr;
+	
+	if((listensd=socket(AF_INET,SOCK_STREAM,0))<0)
+	{
+		perror("errore in socket");
+		exit(-1);
+	}
+
+	memset((void*)&servaddr,0,sizeof(servaddr));
+
+	addr_init(&servaddr, port ,INADDR_ANY);
+
+	if(bind(listensd,(struct sockaddr*)&servaddr,sizeof(servaddr))<0)
+	{
+		perror("errore in bind");
+		exit(-1);
+	}
+	
+	puts("bind effettuato con successo");
+	
+	if(listen(listensd,backlog)<0)
+	{
+		perror("errore in listen");
+		exit(-1);
+	}
+
+	puts("listen effettuata con successo");
+	return listensd;
+}
+
+
+
+// Effettua la connect, restituisce: il descrittore della connessione instaurata
+// Parametri-> descrittore su cui fare l'accept
+int connessioneServer(int listensd)
+{
+	int connsd;
+	if((connsd=accept(listensd,(struct sockaddr*)NULL,NULL))<0)
+		{
+			perror("errore in accept");
+			exit(-1);
+		}
+		puts("Connessione!");
+	return connsd;
+}
+
+
+
+//	Imposta il timeout sul descrittore della connessione, restituisce: 0 se c'e' un errore, 1 se l'operazione va a buon fine
+//	Parametri-> descrittore della connessione, timeout per l'invio in secondi e microsecondi, timeout per la ricezione in secondi e microsecondi,
+int set_timeout(int sockd , time_t w_sec , suseconds_t w_usec , time_t r_sec , suseconds_t r_usec)
+{
+
+	struct timeval w_tv , r_tv;
+	w_tv.tv_sec = w_sec;
+	w_tv.tv_usec = w_usec;
+
+	r_tv.tv_sec = r_sec;
+	r_tv.tv_usec = r_usec;
+
+	if( setsockopt( sockd , SOL_SOCKET , SO_RCVTIMEO , &w_tv , sizeof(w_tv) ) == -1)
+	{
+		perror("errore in setsockopt");
+		return 0;
+	}	
+
+	if( setsockopt( sockd , SOL_SOCKET , SO_RCVTIMEO , &r_tv , sizeof(r_tv) ) == -1)
+	{
+		perror("errore in setsockopt");
+		return 0;
+	}	
+	
+	return 1;
+}
+
+
+
+//	Converto un indirizzo ip in formato stringa in uno in formato u_long (unsigned long)
+//	Parametri-> stringa contenete l'indirizzo ip, struttura dove inserire l'indirizzo ip
+void get_ip_string( char * string_ip , struct in_addr * ip) 
+{
+	if (inet_pton(AF_INET, string_ip , ip) <= 0) 
+	{
+  	fprintf(stderr, "errore in inet_pton per %s", string_ip);
+  	exit(1);
+  }
+}
+
+//  Scrive su buffer il contenuto di un file o socket , ritorna null in caso di errore, il buffer in caso di successo
+//	Parametri -> descrittore socket, blocco di lettura
+char* writeFile_on_buffer(int fd, size_t n)
+{
+	size_t l_read = 0;
+	int offset = 0;
+	int count = 0;
+	char *buffer;
+	buffer = calloc ( 1 , sizeof(char));	
+
+	do
+	{
+		count += n;
+		buffer = realloc( buffer , count * sizeof(char) );
+		l_read = readn(fd, &buffer[offset], n);
+		offset += n ;
+	}while(l_read == 0 );
+
+	if(n == -1)
+		return NULL;
+	else
+		return buffer;
+}
+
+
+
+//  Scrive su buffer il contenuto di un file o socket (bloccante solo prima della ricezione), ritorna null in caso di errore, il buffer in caso di 	
+//	successo
+//	Parametri -> descrittore socket, blocco di lettura
+char* writeFile_on_buffer_noblock(int fd, size_t n)
+{
+	size_t l_read = 0;
+	int offset = 0;
+	int count = 0;
+	char *buffer;
+	buffer = calloc ( 1 , sizeof(char));	
+
+	do
+	{
+		count += n;
+		buffer = realloc( buffer , count * sizeof(char) );
+		l_read = readn_noblock(fd, &buffer[offset], n);
+		offset += n ;
+	}while(l_read == 0 );
+
+	if(n == -1)
+		return NULL;
+	else
+		return buffer;
+}
+
+
+
+/*Scrive su file o socket il contenuto di un buffer. Ritorna 0 in caso di errore, 1 in caso di successo*/
+int writeBuffer_on_file(int fd, size_t n , char*buffer)
+{
+	size_t l_write = 0;
+	int offset = 0;
+	int count = strlen(buffer)+1;
+	int length;
+
+	do
+	{
+		if(count < n)
+		{
+			length = count;
+		}
+		else
+		{
+			length = n;
+		}
+		
+		l_write = writen(fd, &buffer[offset], length);
+		offset += l_write;
+
+		count = count - l_write;
+
+	}while(count > 0);
+	
+	if(n == -1)
+		return 0;
+	else
+		return 1;
+}
+
+
+
+//	Funzione di scrittura in stream su socket ritorna: -1 se c'è un errore altrimenti il numero di byte scritti
+//	Parametri-> descrittore socket, buffer per la lettura, dimensione blocco scrittura
+ssize_t writen(int fd, const void *buf, size_t n)
+{
+  size_t nleft;
+  ssize_t nwritten;
+  const char *ptr;
+
+  ptr = buf;
+  nleft = n;
+  while (nleft > 0) {
+    if ((nwritten = write(fd, ptr, nleft)) <= 0) {
+       if ((nwritten < 0) && (errno == EINTR)) nwritten = 0; 	    
+       else return(-1);	    /* errore */
+    }
+    nleft -= nwritten;
+    ptr += nwritten;  
+  }
+  return(n-nleft);
+}
+
+
+
+//	Funzione di lettura in stream su socket ritorna: -1 se c'è un errore altrimenti il numero di byte letti
+//	Parametri-> descrittore socket, buffer per la scrittura, dimensione blocco lettura
+ssize_t readn(int fd, void *buf, size_t count) 
+{
+	size_t nleft;
+	ssize_t nread;
+ 
+	nleft = count;
+	while (nleft > 0) {             /* repeat until no left */
+		if ( (nread = read(fd, buf, nleft)) < 0) {
+			if (errno == EINTR) {   /* if interrupted by system call */
+				continue;           /* repeat the loop */
+			} else {
+				return(nread);      /* otherwise exit */
+			}
+		} else if (nread == 0) {    /* EOF */
+			break;                  /* break loop here */ 
+		}
+		nleft -= nread;             /* set left to read */
+		buf +=nread;                /* set pointer */
+	}
+	return (nleft);
+}
+
+
+
+//	Funzione di lettura che si blocca in attessa solo dei primi dati, ritorna: -1 se c'è un errore altrimenti il numero di byte letti
+//	Parametri-> descrittore socket, buffer per la scrittura, dimensione blocco lettura
+ssize_t readn_noblock(int fd, void *buf, size_t count) 
+{
+	size_t nleft;
+	ssize_t nread;
+ 
+	nleft = count;
+	while (nleft > 0) 
+	{             /* repeat until no left */
+		if ( (nread = read(fd, buf, nleft)) < 0) 
+		{
+			if (errno == EINTR) 
+			{   /* if interrupted by system call */
+				continue;           /* repeat the loop */
+			} 	
+			else
+		 	{
+				return(nread);      /* otherwise exit */
+		 	}
+					
+		} 
+		else if (nread < nleft) 
+		{    /* EOF */				
+			break;                  /* break loop here */ 
+		}
+
+		nleft -= nread;             /* set left to read */
+		buf +=nread;                /* set pointer */
+
+	}
+
+	return (nleft);
+}
